@@ -1,8 +1,6 @@
 from discord import Intents, Interaction, Message
 from discord.ext import commands
-
 import config
-
 # Set Intents
 intents: Intents = Intents.default()
 intents.message_content = True
