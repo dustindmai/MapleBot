@@ -1,19 +1,41 @@
 from discord import Intents, Interaction, Message
 from discord.ext import commands
+
+# from event_enum import initialize_event_enum, EVENT_ENUM
 import config
+import asyncio
+import logging
+from database import init_db
+
 # Set Intents
 intents: Intents = Intents.default()
 intents.message_content = True
 # Create bot
 bot: commands.Bot = commands.Bot(command_prefix="!", intents=intents)
 
+COGS = ["cogs.event_manager", "cogs.admin"]
+
+
+async def load_cogs():
+    for cog in COGS:
+        try:
+            print(f"Attemping to load {cog}...")
+            await bot.load_extension(cog)
+            print(f"Loaded {cog} successfully!")
+        except Exception as e:
+            print(f"Failed to load {cog}: {e}")
+
 
 # Sync bot commands
 @bot.event
 async def on_ready():
     try:
-        print(f"Syncing {bot.user} tree commands.")
+        # print("Loading EVENT_ENUM")
+        # await initialize_event_enum()
+        # print("Event Enum Loaded: ", EVENT_ENUM)
+        print(f"Syncing {bot.user} tree commands...")
         synced = await bot.tree.sync()
+
         print(f"Synced {len(synced)} tree command(s)!")
     except Exception as e:
         print(e)
@@ -50,4 +72,12 @@ async def on_message(message: Message) -> None:
     print(f'[{channel}]{username}:"{user_message}"')
 
 
-bot.run(token=config.TOKEN)
+async def main():
+    logging.basicConfig(level=logging.DEBUG)
+    await init_db()
+    await load_cogs()
+    await bot.start(config.TOKEN)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
