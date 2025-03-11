@@ -13,3 +13,7 @@ async def init_db():
         print("Initializing Database")
         await conn.run_sync(Base.metadata.create_all)
         print("Database initialized")
+        
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session

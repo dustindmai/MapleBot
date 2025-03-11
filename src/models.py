@@ -26,7 +26,7 @@ class Event(Base):
 class Remindees(Base):
     __tablename__ = "remindees"
     discord_id = Column(BigInteger, primary_key=True)
-    event_id = Column(Integer, ForeignKey("events.event_id"), primary_key=True)
+    event_id = Column(Integer, ForeignKey("events.event_id", ondelete='CASCADE'), primary_key=True)
     server_id = Column(BigInteger, nullable=True)
     is_role = Column(Boolean)
     is_dm = Column(Boolean)

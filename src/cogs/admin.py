@@ -19,6 +19,6 @@ class Admin(commands.Cog):
             
         for task in asyncio.all_tasks():
             task.cancel()
-        
+            
 async def setup(bot):
     await bot.add_cog(Admin(bot))
