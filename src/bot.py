@@ -1,11 +1,13 @@
+import asyncio
+import logging
+
 from discord import Intents, Interaction, Message
 from discord.ext import commands
 
 #
 import config
-import asyncio
-import logging
 from database import init_db
+from remind import reminder_loop
 
 # Set Intents
 intents: Intents = Intents.default()
@@ -15,13 +17,17 @@ bot: commands.Bot = commands.Bot(command_prefix="!", intents=intents)
 
 COGS = ["cogs.event_manager", "cogs.admin", "cogs.user_manager"]
 
-@bot.tree.command(name = 'help', description = 'Returns all commands available and brief descriptions of each command.')
-async def help(interaction:Interaction):
-    helptext= "```"
+
+@bot.tree.command(
+    name="help",
+    description="Returns all commands available and brief descriptions of each command.",
+)
+async def help(interaction: Interaction):
+    helptext = "```"
     for command in bot.tree.walk_commands():
-        helptext+=f"**{command.name}** - {command.description}\n"
-    
-    helptext+="```"
+        helptext += f"**{command.name}** - {command.description}\n"
+
+    helptext += "```"
     await interaction.response.send_message(helptext)
 
 
@@ -34,7 +40,8 @@ async def load_cogs():
         except Exception as e:
             print(f"Failed to load {cog}: {e}")
 
-@bot.tree.command(name = "reload", description="Reloads all cogs.")
+
+@bot.tree.command(name="reload", description="Reloads all cogs.")
 @commands.is_owner()
 async def reload(interaction: Interaction):
     for cog in COGS:
@@ -42,23 +49,26 @@ async def reload(interaction: Interaction):
             print(f"Reloading cog {cog}...")
             await bot.reload_extension(cog)
             print(f"Reloaded cog {cog}!")
-            
+
         except Exception as e:
             print(f"Unable to reload {cog}: {e}")
             await interaction.response.send_message(f"Unable to reload {cog}: {e}")
     await interaction.response.send_message("Reloaded cogs!", ephemeral=True)
-        
+
+
 # Sync bot commands
 @bot.event
 async def on_ready():
     try:
-        #print("Loading EVENT_ENUM")
-        #await EventEnum.load_events()
-        #print("Event Enum Loaded: ", EventEnum._member_map)
+        # print("Loading EVENT_ENUM")
+        # await EventEnum.load_events()
+        # print("Event Enum Loaded: ", EventEnum._member_map)
         print(f"Syncing {bot.user} tree commands...")
         synced = await bot.tree.sync()
 
         print(f"Synced {len(synced)} tree command(s)!")
+        print("Starting reminder event loop...")
+        bot.loop.create_task(reminder_loop(bot))
     except Exception as e:
         print(e)
 

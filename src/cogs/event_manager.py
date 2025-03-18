@@ -6,10 +6,10 @@ from discord.ext import commands
 from sqlalchemy.future import select
 
 from database import get_db
-from event_enum import EventEnum
 from models import Event
-
 from views import confirm_view
+
+
 # from typing import List
 class EventManager(commands.Cog):
     """Cog to manage Events table
@@ -50,10 +50,7 @@ class EventManager(commands.Cog):
     #     async with AsyncSessionLocal() as session:
     #         yield session
 
-    @app_commands.command(
-        name="add_event",
-        description="Adds a new event/reminder."
-    )
+    @app_commands.command(name="add_event", description="Adds a new event/reminder.")
     @app_commands.choices(
         interval=[
             app_commands.Choice(name="Daily", value=1),
@@ -61,7 +58,7 @@ class EventManager(commands.Cog):
             app_commands.Choice(name="Monthly", value=31),
         ]
     )
-    #@commands.is_owner()
+    # @commands.is_owner()
     async def add_event(
         self,
         interaction: discord.Interaction,
@@ -97,7 +94,6 @@ class EventManager(commands.Cog):
                 await interaction.response.send_message(
                     f"Event '{name}' added successfully."
                 )
-                await EventEnum.load_events()
             except Exception as e:
                 print(f"Error in add_event: {e}")
                 await interaction.response.send_message(
@@ -105,8 +101,7 @@ class EventManager(commands.Cog):
                 )
 
     @app_commands.command(
-        name="list_reminders",
-        description="Lists all current events/reminders."
+        name="list_reminders", description="Lists all current events/reminders."
     )
     async def list_reminders(self, interaction: discord.Interaction):
         """Generates a list of available reminders.
@@ -135,8 +130,7 @@ class EventManager(commands.Cog):
             await interaction.response.send_message(embed=embed)
 
     @app_commands.command(
-        name="remove_reminder",
-        description="Removes an event from the event table."
+        name="remove_reminder", description="Removes an event from the event table."
     )
     @commands.is_owner()
     async def remove_reminder(self, interaction: discord.Interaction, event_id: int):
@@ -146,26 +140,29 @@ class EventManager(commands.Cog):
             event = result.scalar_one_or_none()
             if event:
                 embed = discord.Embed(
-                    title='Confirmation',
+                    title="Confirmation",
                     description=f"Do you really want to remove '{event.event_name}' from the events table?",
-                    color = discord.Color.orange()
+                    color=discord.Color.orange(),
                 )
                 view = confirm_view.ConfirmView()
-                await interaction.response.send_message(embed = embed, view = view)
+                await interaction.response.send_message(embed=embed, view=view)
                 await view.wait()
                 if view.value is None:
-                    await interaction.followup.send('Timed out.', ephemeral=True)
+                    await interaction.followup.send("Timed out.", ephemeral=True)
                     return
                 elif view.value:
                     await session.delete(event)
                     await session.commit()
-                    await interaction.followup.send('Event removed successfully.', ephemeral=True)
+                    await interaction.followup.send(
+                        "Event removed successfully.", ephemeral=True
+                    )
                 else:
-                    await interaction.followup.send('Event was not removed.', ephemeral=True)
+                    await interaction.followup.send(
+                        "Event was not removed.", ephemeral=True
+                    )
             else:
-                await interaction.response.send_message('Event does not exist.')
+                await interaction.response.send_message("Event does not exist.")
 
 
 async def setup(bot):
     await bot.add_cog(EventManager(bot))
-

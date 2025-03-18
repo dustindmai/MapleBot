@@ -23,7 +23,7 @@ class UserManager(commands.Cog):
             if not event:
                 await interaction.response.send_message(f"Event id {eid} does not exist.")
                 return
-            remind = Remindees(
+            reminder = Remindees(
                 discord_id = interaction.user.id,
                 event_id = eid,
                 server_id = interaction.guild.id,
@@ -32,7 +32,7 @@ class UserManager(commands.Cog):
             )
             try:
                 print("Attempting to subscribe...")
-                session.add(remind)
+                session.add(reminder)
                 await session.commit()
                 await interaction.response.send_message(
                     f"Successfully subscribed to {event.event_name}!"
