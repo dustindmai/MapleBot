@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 
+import discord
 from sqlalchemy.future import select
 
 from database import AsyncSessionLocal
@@ -11,8 +12,8 @@ async def reminder_loop(bot):
     await bot.wait_until_ready()
     while not bot.is_closed():
         async with AsyncSessionLocal() as session:
-            now = datetime.datetime.now(datetime.timezone.utc).time()
-            now = datetime.time(now.hour, now.minute)
+            nowFull = datetime.datetime.now(datetime.timezone.utc)
+            now = datetime.time(nowFull.time().hour, nowFull.time().minute)
             print(f"\nTIME NOW: {now}\n")
             result = await session.execute(
                 select(Remindees, Event)
@@ -26,14 +27,26 @@ async def reminder_loop(bot):
 
             user_reminders = {}
             for remindee, event in reminders:
+                print(f"{event.event_name}\n")
                 if remindee.discord_id not in user_reminders:
                     user_reminders[remindee.discord_id] = []
                 user_reminders[remindee.discord_id].append(event.event_name)
 
             for user_id, event_names in user_reminders.items():
-                user = bot.get_user(user_id)
-                if user:
-                    reminder_text = "\n".join(f"- {name}" for name in event_names)
-                    await user.send(f"** Your upcoming resets:**\n{reminder_text}")
+                print(f"user_id:{user_id}, event_name:{event_names}")
+                user = bot.get_user(int(user_id))
+                print(user)
+                if not user:
+                    try:
+                        user = await bot.fetch_user(int(user_id))
+                    except discord.NotFound:
+                        print(f"User {user_id} not found.")
+                        continue
+                reminder_text = "\n".join(f"- {name}" for name in event_names)
+                try:
+                    await user.send(f"**Upcoming resets:**\n{reminder_text}")
+                except discord.Forbidden:
+                    for guild in bot.guilds:
+                        member = guild.get_member(user_id)
 
         await asyncio.sleep(60 - datetime.datetime.now().time().second)

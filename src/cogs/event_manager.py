@@ -31,7 +31,8 @@ class EventManager(commands.Cog):
             self.event_choices.clear()
             for event in events:
                 self.event_choices.append(
-                    app_commands.Choice(name=event.event_name, value=event.event_id)
+                    app_commands.Choice(
+                        name=event.event_name, value=event.event_id)
                 )
 
             print("Loaded event choices")
@@ -101,6 +102,12 @@ class EventManager(commands.Cog):
                 )
 
     @app_commands.command(
+        name="edit_event", description="Edits an event's reset time/interval/name etc."
+    )
+    async def edit_event(self, interaction: discord.Interaction):
+        return
+
+    @app_commands.command(
         name="list_reminders", description="Lists all current events/reminders."
     )
     async def list_reminders(self, interaction: discord.Interaction):
@@ -141,7 +148,8 @@ class EventManager(commands.Cog):
             if event:
                 embed = discord.Embed(
                     title="Confirmation",
-                    description=f"Do you really want to remove '{event.event_name}' from the events table?",
+                    description=f"Do you really want to remove '{
+                        event.event_name}' from the events table?",
                     color=discord.Color.orange(),
                 )
                 view = confirm_view.ConfirmView()
