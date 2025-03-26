@@ -18,31 +18,11 @@ class EventManager(commands.Cog):
         commands (_type_): Commands Cog
     """
 
-    def __init__(self, bot):
-        self.bot = bot
-        self.event_choices = []
+    def __init__(self, bot : commands.Bot):
+        self.bot : commands.Bot= bot
 
-    async def load_event_choices(self):
-        async for session in get_db():
-            stmt = select(Event)
-            result = await session.execute(stmt)
-            events = result.scalars().all()
 
-            self.event_choices.clear()
-            for event in events:
-                self.event_choices.append(
-                    app_commands.Choice(
-                        name=event.event_name, value=event.event_id)
-                )
-
-            print("Loaded event choices")
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        await self.load_event_choices()
-        print("Event manager loaded and choices initialized.")
-
-    # async def get_db(self):
+        # async def get_db(self):
     #     """Gets and returns an asynchronous database session
 
     #     Returns:

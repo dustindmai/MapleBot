@@ -8,8 +8,8 @@ from sqlalchemy import delete
 from views import confirm_view
 class UserManager(commands.Cog):
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot : commands.Bot):
+        self.bot : commands.Bot = bot
 
     @app_commands.command(
         name = "sub_to",
@@ -21,7 +21,7 @@ class UserManager(commands.Cog):
             result = await session.execute(stmt)
             event = result.scalar_one_or_none()
             if not event:
-                await interaction.response.send_message(f"Event id {eid} does not exist.")
+                _ = await interaction.response.send_message(f"Event id {eid} does not exist.")
                 return
             reminder = Remindees(
                 discord_id = interaction.user.id,
@@ -34,15 +34,15 @@ class UserManager(commands.Cog):
                 print("Attempting to subscribe...")
                 session.add(reminder)
                 await session.commit()
-                await interaction.response.send_message(
+                _ = await interaction.response.send_message(
                     f"Successfully subscribed to {event.event_name}!"
                 )
             except Exception as e:
                 print(f"Error in add_event: {e}")
-                await interaction.response.send_message(
+                _ = await interaction.response.send_message(
                     f"Unable to subscribe to event {event.event_name}. {e}"
                 )
-        
+
     @app_commands.command(
         name = 'unsub',
         description = 'Unsubscribe to a reminder or all reminders.'
@@ -53,7 +53,7 @@ class UserManager(commands.Cog):
             result = await session.execute(stmt)
             events = result.scalars().all()
             if not events:
-                await interaction.response.send_message("You weren't subscribed to this event.")
+                _ = await interaction.response.send_message("You weren't subscribed to this event.")
                 return
             embed = discord.Embed(
                 title = 'Confirmation',
@@ -61,8 +61,8 @@ class UserManager(commands.Cog):
                 color = discord.Color.orange()
             )
             view = confirm_view.ConfirmView()
-            await interaction.response.send_message(embed = embed, view = view)
-            await view.wait()
+            _ = await interaction.response.send_message(embed = embed, view = view)
+            _ = await view.wait()
             if view.value is None:
                 await interaction.followup.send('Timed out.', ephemeral=True)
                 return
@@ -84,9 +84,9 @@ class UserManager(commands.Cog):
             result = await session.execute(stmt)
             print(f"Finished executing {stmt}!")
             subs = result.scalars().all()
-            
+
             if not subs:
-                await interaction.response.send_message("You are currently not subscribed to any reminders.")
+                _ = await interaction.response.send_message("You are currently not subscribed to any reminders.")
                 return
             sub_list = "\n".join(
                 f"**{sub.event_name}** - Resets at {sub.reset_time} UTC. ID: {sub.event_id}"
@@ -97,7 +97,7 @@ class UserManager(commands.Cog):
                 description = sub_list,
                 color = discord.Color.blue(),
             )
-            await interaction.response.send_message(embed = embed)
+            _ = await interaction.response.send_message(embed = embed)
 
-async def setup(bot):
-    await bot.add_cog(UserManager(bot))
+async def setup(bot : commands.Bot):
+    _ = await bot.add_cog(UserManager(bot))

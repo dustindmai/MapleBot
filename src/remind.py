@@ -48,5 +48,18 @@ async def reminder_loop(bot):
                 except discord.Forbidden:
                     for guild in bot.guilds:
                         member = guild.get_member(user_id)
-
+                        if member:
+                            channel = guild.system_channel or discord.utils.get(
+                                guild.text_channels, name="general"
+                            )
+                            if channel:
+                                try:
+                                    await channel.send(
+                                        f"{member.mention}, I couldn't DM you your reset reminders!"
+                                        f"Please enable DMs or check notifications in the bot channel."
+                                    )
+                                except Exception as e:
+                                    print(f"Error sending message in {
+                                          guild.name}: {e}")
+                            break
         await asyncio.sleep(60 - datetime.datetime.now().time().second)
